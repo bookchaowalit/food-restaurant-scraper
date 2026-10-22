@@ -103,3 +103,52 @@ def test_dry_run_never_initialises_sentry(sentry, monkeypatch, tmp_path):
 
     assert code == 0
     assert sentry.init_kwargs is None
+
+
+def test_init_never_sends_locals_bodies_or_messages(sentry, monkeypatch):
+    # SPEC-001 AC-06: sentry_sdk.init also installs the excepthook, so an uncaught
+    # crash would otherwise carry frame locals and the exception message (page text).
+    from restaurants.observability import init_sentry
+
+    monkeypatch.setenv("SENTRY_DSN", "https://public@example.invalid/1")
+    assert init_sentry("test") is sentry
+    kwargs = sentry.init_kwargs
+    assert kwargs["include_local_variables"] is False
+    assert kwargs["max_request_body_size"] == "never"
+    assert kwargs["send_default_pii"] is False
+
+    event = {
+        "message": "ok",
+        "request": {"data": SECRET_PAGE_TEXT, "headers": {"Cookie": "token"}},
+        "breadcrumbs": {"values": [{"message": SECRET_PAGE_TEXT}]},
+        "extra": {"html": SECRET_PAGE_TEXT},
+        "exception": {
+            "values": [
+                {
+                    "type": "ValueError",
+                    "value": SECRET_PAGE_TEXT,
+                    "stacktrace": {
+                        "frames": [
+                            {
+                                "function": "parse_html",
+                                "vars": {"html": SECRET_PAGE_TEXT},
+                            }
+                        ]
+                    },
+                }
+            ]
+        },
+        "threads": {
+            "values": [{"stacktrace": {"frames": [{"vars": {"token": "secret"}}]}}]
+        },
+    }
+    scrubbed = kwargs["before_send"](event, {})
+
+    assert SECRET_PAGE_TEXT not in repr(scrubbed)
+    assert "secret" not in repr(scrubbed)
+    assert scrubbed["exception"]["values"][0]["type"] == "ValueError"
+    assert (
+        scrubbed["exception"]["values"][0]["stacktrace"]["frames"][0]["function"]
+        == "parse_html"
+    )
+    assert "request" not in scrubbed
