@@ -55,8 +55,8 @@ it.
 
 | AC | Red (sha · command · failure) | Green |
 |---|---|---|
-| AC-01 | `dc52c1b` · `python -m pytest -q tests/test_observability.py` · `AssertionError: []` / `assert 0 == 1` (no Sentry event for the failed `wongnai_bangkok` job) | GREEN_CI |
-| AC-05 | none: written green as a guard (the snapshot already matched the contract) | GREEN_CI |
+| AC-01 | `dc52c1b` · `python -m pytest -q tests/test_observability.py` · `AssertionError: []` / `assert 0 == 1` (no Sentry event for the failed `wongnai_bangkok` job) | [CI 39754913444](https://github.com/bookchaowalit/food-restaurant-scraper/actions/runs/39754913444) (success, 3.10 + 3.13, coverage gate 91) |
+| AC-05 | none: written green as a guard (the snapshot already matched the contract) | [CI 39754913444](https://github.com/bookchaowalit/food-restaurant-scraper/actions/runs/39754913444) (success, 3.10 + 3.13, coverage gate 91) |
 
 ## Schedule (planned replacement, D6)
 
