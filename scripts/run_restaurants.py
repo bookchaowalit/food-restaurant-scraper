@@ -113,11 +113,20 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.output_dir.exists() and not args.output_dir.is_dir():
         parser.error(f"--output-dir is not a directory: {args.output_dir}")
-    results = asyncio.run(
-        run_restaurants(
-            args.output_dir, args.max_pages, args.min_rows, dry_run=args.dry_run
+    if args.dry_run:
+        results = asyncio.run(
+            run_restaurants(
+                args.output_dir, args.max_pages, args.min_rows, dry_run=True
+            )
         )
-    )
+    else:
+        from restaurants.observability import init_sentry, report_failures
+
+        sentry = init_sentry("run_restaurants")
+        results = asyncio.run(
+            run_restaurants(args.output_dir, args.max_pages, args.min_rows)
+        )
+        report_failures(sentry, results)
     if args.json:
         print(json.dumps(results, ensure_ascii=False))
     return 1 if any("error" in result for result in results) else 0

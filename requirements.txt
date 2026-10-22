@@ -5,3 +5,7 @@ lxml>=5.0.0
 # anyio PYSEC-2026-4024 / PYSEC-2026-4025, idna PYSEC-2026-215.
 anyio>=4.14.2
 idna>=3.15
+certifi>=2026.10.19  # PYSEC-2026-4320 / GHSA-6q48-6c7w-9gw2 (via httpx)
+# Error reporting for scheduled runs (restaurants/observability.py); off without SENTRY_DSN.
+# Keep this file in sync with pyproject.toml: setup_cron.sh installs the cron venv from here.
+sentry-sdk>=2.72,<3
