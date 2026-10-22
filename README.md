@@ -1,17 +1,17 @@
 # book-restaurant-scraping
 
-**Tier:** C / tool prototype (portfolio breadth, not interview flagship)  
+**Tier:** B (catalog label; Big Loop target L3)  
 **Owner path:** `bookchaowalit/book-apps/tools/book-restaurant-scraping`
 
 > **Source terms (2026-10-15):** Wongnai was rejected by the owner; live collection and the weekly cron below are not approved. Offline fixtures/tests only. See [Source terms decision](#source-terms-decision-2026-10-15).
 
 ## Purpose
 
-Restaurant listing scrape prototype (Wongnai-style module).
+Bounded Wongnai restaurant listing collector (restaurant.v1 producer); offline fixtures only while Wongnai is rejected.
 
 ## Entry points
 
-- `restaurants/wongnai_scraper.py`
+- `scripts/run_restaurants.py` -> `restaurants/wongnai_scraper.py` (jobs `wongnai_bangkok`, `wongnai_upcountry`)
 
 ## Stack
 
@@ -56,18 +56,28 @@ before any request.
 ## Checks (offline)
 
 ```bash
-pip install -r requirements.txt pytest ruff
-ruff check .
-python -m pytest -q
-python3 scripts/run_restaurants.py --dry-run --json   # plan only, no network
+uv sync --frozen --all-extras          # runtime deps + dev extra (pytest, ruff, mypy) from uv.lock
+uv run ruff check . && uv run ruff format --check .
+uv run mypy                            # scope and strictness: [tool.mypy] in pyproject.toml
+uv run python -m pytest -q --cov       # CI gate: total coverage >= 91%
+uv run python scripts/run_restaurants.py --dry-run --json   # plan only, no network
 ```
 
-Tests replay `tests/fixtures/` and mock the HTTP layer; CI
-(`.github/workflows/ci.yml`) runs the same commands.
+Tests replay `tests/fixtures/` and mock the HTTP layer; a conftest guard fails any real
+socket connection. CI (`.github/workflows/ci.yml`, shared platform-ci-workflows v1.1.1)
+runs the same checks on Python 3.10 and 3.13. `requirements.txt` is kept because
+`setup_cron.sh` installs the cron venv from it; keep it in sync with `pyproject.toml`.
+
+## Error reporting (opt-in)
+
+With `SENTRY_DSN` set (optionally `SENTRY_ENVIRONMENT`), `scripts/run_restaurants.py`
+sends one Sentry `error` event per failed job, carrying the job name and exception class
+only (`restaurants/observability.py`; no page content, `send_default_pii=False`, tracing
+off). Without a DSN nothing is initialised; `--dry-run` never initialises it.
 
 ## Boundaries
 
-- **Not** a lake-first data product. Durable market datasets live under `book-*-data` repos.
+- Producer for `restaurant.v1` (draft, collection rejected); it does **not** land data in the lake. The Bronze `restaurant_listings` replay belongs to the parent pipeline and is not wired.
 - **Not** coupled to Solo Empire monorepo runtime. Nested Git repo; commit only inside this tree.
 - Never commit `.env`, cookies, session dumps, or scraped PII dumps to Git.
 
