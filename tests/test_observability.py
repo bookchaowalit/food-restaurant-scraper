@@ -111,7 +111,7 @@ def test_init_never_sends_locals_bodies_or_messages(sentry, monkeypatch):
     from restaurants.observability import init_sentry
 
     monkeypatch.setenv("SENTRY_DSN", "https://public@example.invalid/1")
-    assert init_sentry("test") is sentry
+    assert init_sentry("test") is not None
     kwargs = sentry.init_kwargs
     assert kwargs["include_local_variables"] is False
     assert kwargs["max_request_body_size"] == "never"

@@ -39,7 +39,12 @@ it.
    it.
 4. The snapshot CSV header (`<stem>.csv`) equals the `restaurant.v1` record fields, in order, and every
    row has the contract's required fields.
-5. CI fails when total coverage drops below 91%.
+5. `sentry_sdk.init` also installs the excepthook, so an uncaught crash would be reported
+   too. Init therefore sets `include_local_variables=False`, `max_request_body_size="never"`
+   and a `before_send` (`scrub_event`) that drops frame variables and source context,
+   exception messages, request data, breadcrumbs, extras, user and contexts; only exception
+   types, frame locations and tags are sent.
+6. CI fails when total coverage drops below 91%.
 
 ## Acceptance
 
@@ -49,6 +54,7 @@ it.
 | AC-02 | Given `SENTRY_DSN` is set, when the run succeeds, then no event is sent | `tests/test_observability.py::test_successful_run_sends_nothing` |
 | AC-03 | Given no `SENTRY_DSN` (or `--dry-run`), when a run fails, then Sentry is not initialised | `test_without_dsn_sentry_stays_off`, `test_dry_run_never_initialises_sentry` |
 | AC-04 | CI on `main` is green on Python 3.10 and 3.13 with ruff, ruff format, mypy and the 91% coverage gate | CI run below |
+| AC-06 | Given `SENTRY_DSN` is set, when Sentry is initialised, then locals and request bodies are off and `before_send` strips page text, tokens and request data from an event while keeping the exception type | `tests/test_observability.py::test_init_never_sends_locals_bodies_or_messages` |
 | AC-05 | Given the saved Wongnai fixture, when a run writes the snapshot, then the header is the `restaurant.v1` record fields and no row misses a required field | `tests/test_contract.py` |
 
 ## Red/green log
@@ -56,6 +62,7 @@ it.
 | AC | Red (sha · command · failure) | Green |
 |---|---|---|
 | AC-01 | `dc52c1b` · `python -m pytest -q tests/test_observability.py` · `AssertionError: []` / `assert 0 == 1` (no Sentry event for the failed `wongnai_bangkok` job) | [CI 39754913444](https://github.com/bookchaowalit/food-restaurant-scraper/actions/runs/39754913444) (success, 3.10 + 3.13, coverage gate 91) |
+| AC-06 | `3790ebb` · `python -m pytest -q tests/test_observability.py` · `KeyError: 'include_local_variables'` (init used SDK defaults: locals and exception text would be sent by the excepthook) | GREEN_CI_2 |
 | AC-05 | none: written green as a guard (the snapshot already matched the contract) | [CI 39754913444](https://github.com/bookchaowalit/food-restaurant-scraper/actions/runs/39754913444) (success, 3.10 + 3.13, coverage gate 91) |
 
 ## Schedule (planned replacement, D6)

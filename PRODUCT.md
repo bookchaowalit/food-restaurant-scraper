@@ -33,7 +33,7 @@ approved, the repo is kept as tested code and synthetic fixtures only.
 | Entry point | `python scripts/run_restaurants.py [--max-pages 1-5] [--min-rows 1-500] [--json] [--dry-run] [--output-dir DIR]` |
 | Who schedules it | Nobody verified. `setup_cron.sh install` would add a weekly crontab line (Sunday 00:15), but this WSL host's crontab has no scraper entries on 2026-10-22, installing it is not approved, and book-job-scraping's `config/jobs.yaml` has no Wongnai job. Other hosts / Windows tasks not verified from WSL [ต้องยืนยัน] |
 | Hosted deployment | None. No API, no port, no cloud job (scheduler host is owner decision D6) |
-| Error reporting | Sentry, opt-in: with `SENTRY_DSN` set, each failed job sends one `error` event (job name + exception class; no page content, no PII). No DSN is configured for this product yet [ต้องยืนยัน] |
+| Error reporting | Sentry, opt-in: with `SENTRY_DSN` set, each failed job sends one `error` event (job name + exception class; no page content, no PII; locals, request bodies, exception messages and breadcrumbs are stripped from any event, including uncaught crashes). No DSN is configured for this product yet [ต้องยืนยัน] |
 | Contract | `restaurant.v1` (architecture-docs `systems/architecture/scraping-contracts/`): status `draft`, `collection_approval: rejected`. The snapshot header equals its record fields (checked offline by `tests/test_contract.py`) |
 | Lake landing | Not wired: no Bronze `restaurant_listings` manifest is produced |
 | Quality gates in CI | ruff, ruff format, mypy (gradual), offline pytest with coverage ≥ 91%, dry-run smoke, on Python 3.10 and 3.13; shared security scan (platform-ci-workflows v1.1.1) |

@@ -73,7 +73,9 @@ runs the same checks on Python 3.10 and 3.13. `requirements.txt` is kept because
 With `SENTRY_DSN` set (optionally `SENTRY_ENVIRONMENT`), `scripts/run_restaurants.py`
 sends one Sentry `error` event per failed job, carrying the job name and exception class
 only (`restaurants/observability.py`; no page content, `send_default_pii=False`, tracing
-off). Without a DSN nothing is initialised; `--dry-run` never initialises it.
+off). Uncaught crashes reach Sentry through the SDK excepthook, but `include_local_variables=False`,
+`max_request_body_size="never"` and `before_send=scrub_event` drop locals, exception text,
+request data and breadcrumbs. Without a DSN nothing is initialised; `--dry-run` never initialises it.
 
 ## Boundaries
 
