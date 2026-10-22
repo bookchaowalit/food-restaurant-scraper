@@ -2,19 +2,15 @@
 
 import csv
 import io
-import sys
 from contextlib import redirect_stderr
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
 
 from restaurants.atomic_io import append_csv_atomic, write_text_atomic
 from restaurants.wongnai_scraper import HISTORY_FIELDS, append_history, write_snapshot
-from run_restaurants import main as restaurants_main
+from scripts.run_restaurants import main as restaurants_main
 
 ROW = {"restaurant_id": "1", "name": 'Khao "Man" Gai, Pratunam', "rating": 4.5}
 

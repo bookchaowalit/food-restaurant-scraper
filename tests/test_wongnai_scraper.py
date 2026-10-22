@@ -25,6 +25,8 @@ def _page(html: str, url: str = SOURCE) -> httpx.Response:
 
 
 class WongnaiScraperTests(unittest.TestCase):
+    html: str
+
     @classmethod
     def setUpClass(cls):
         cls.html = FIXTURE.read_text(encoding="utf-8")

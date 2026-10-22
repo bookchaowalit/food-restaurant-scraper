@@ -310,6 +310,11 @@ def _integer(value: Any) -> int:
     return number if number >= 0 else 0
 
 
+def _mapping(value: Any) -> dict[str, Any]:
+    """Return ``value`` when it is a JSON object, else an empty dict."""
+    return value if isinstance(value, dict) else {}
+
+
 def _address(business: dict[str, Any]) -> dict[str, Any]:
     contact = business.get("contact")
     address = contact.get("address") if isinstance(contact, dict) else None
@@ -396,28 +401,12 @@ def parse_html(
             url = canonical_url(business.get("rUrl") or business.get("url") or "")
         except ValueError:
             continue
-        price_range = (
-            business.get("priceRange")
-            if isinstance(business.get("priceRange"), dict)
-            else {}
-        )
-        contact = (
-            business.get("contact") if isinstance(business.get("contact"), dict) else {}
-        )
-        statistic = (
-            business.get("statistic")
-            if isinstance(business.get("statistic"), dict)
-            else {}
-        )
-        city = address.get("city") if isinstance(address.get("city"), dict) else {}
-        district = (
-            address.get("district") if isinstance(address.get("district"), dict) else {}
-        )
-        subdistrict = (
-            address.get("subDistrict")
-            if isinstance(address.get("subDistrict"), dict)
-            else {}
-        )
+        price_range = _mapping(business.get("priceRange"))
+        contact = _mapping(business.get("contact"))
+        statistic = _mapping(business.get("statistic"))
+        city = _mapping(address.get("city"))
+        district = _mapping(address.get("district"))
+        subdistrict = _mapping(address.get("subDistrict"))
         rating = _number(
             business.get("rating") or statistic.get("rating"), minimum=0, maximum=5
         )

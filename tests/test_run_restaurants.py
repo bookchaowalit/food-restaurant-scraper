@@ -1,15 +1,11 @@
 import asyncio
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "scripts"))
 
-from run_restaurants import JOBS, main, run_restaurants
+from scripts.run_restaurants import JOBS, main, run_restaurants
 
 
 class RunRestaurantsTests(unittest.TestCase):
