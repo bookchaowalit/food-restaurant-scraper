@@ -1,7 +1,7 @@
 ---
 id: SPEC-001
 title: L2/L3 baseline for food-restaurant-scraper
-status: in review
+status: approved
 created: 2026-10-22
 owner: bookchaowalit
 ---
@@ -14,7 +14,7 @@ owner: bookchaowalit
 |---|---|
 | Main-only | yes (ADR-0004 v1.1: red run is local, red and green commits pushed together) |
 | Maker | Claude session b-data (2026-10-22) |
-| Checker / approver | pending (owner) |
+| Checker / approver | independent Claude reviewer / AI approval 2026-10-24 (see Approval) |
 
 ## Problem
 
@@ -87,3 +87,13 @@ No scheduler was changed (owner decision D6 on the schedule host is open).
 Live captures (Wongnai is rejected), lake writes to R2, new restaurant sources, a code
 guard that refuses live runs (the rejection is policy today, see README), and changes to
 `setup_cron.sh`.
+
+## Approval (2026-10-24)
+
+| Field | Value |
+|---|---|
+| Checker | independent Claude reviewer subagent (`solo:solo-reviewer`, Sonnet, read-only, no maker context) |
+| Approver | AI approval under the owner's process (approvals by the owner or AI with evidence; maker and checker are different agents). Recorded by Claude session oa-remainder on the owner's instruction "ทำที่เหลือให้หน่อย" (2026-10-24) |
+| Verdict | **approved** |
+| Tests run by the checker | uv run --frozen --offline pytest -q --cov: 38 passed, coverage 91% |
+| Evidence | tests/test_observability.py (AC-01/02/03/06), tests/test_contract.py (AC-05); ci.yml threshold 91, matrix 3.10/3.13. |
