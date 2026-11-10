@@ -10,17 +10,36 @@ Such an event must not carry page content, listing data, tokens or personal data
 init turns off local variables and request bodies, and :func:`scrub_event` drops frame
 variables, exception messages, request data, breadcrumbs and extras from every event
 (only exception types, function names and tags remain). ``send_default_pii`` is off.
+
+Log text is free text (URLs with query strings, page data, tokens), so it never becomes
+an event or a breadcrumb: init installs the logging integration with every level off
+(and stays off if that integration cannot be loaded), and :func:`scrub_event` drops
+``logentry`` and any ``message`` that is not the exact :func:`report_failures` format.
 """
 
 from __future__ import annotations
 
 import os
+import re
 from collections.abc import Iterable, Mapping
 from importlib import import_module
 from types import ModuleType
 from typing import Any
 
-_DROPPED_EVENT_KEYS = ("request", "breadcrumbs", "extra", "user", "contexts")
+_DROPPED_EVENT_KEYS = (
+    "request",
+    "breadcrumbs",
+    "extra",
+    "user",
+    "contexts",
+    "logentry",
+)
+# The only message this module sends: report_failures'
+# "job <name> failed: <ExceptionClass>", where the runner records
+# ``type(exc).__name__`` as the error. Any other message is dropped.
+_REPORTED_MESSAGE = re.compile(
+    r"job (?:[A-Za-z0-9_.-]{1,64}|\?) failed: [A-Za-z_][A-Za-z0-9_]{0,63}"
+)
 
 
 def _strip_frames(container: Any) -> None:
@@ -36,6 +55,9 @@ def scrub_event(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any]:
     """``before_send``: keep exception types, frames' locations and tags; drop the rest."""
     for key in _DROPPED_EVENT_KEYS:
         event.pop(key, None)
+    message = event.get("message")
+    if not (isinstance(message, str) and _REPORTED_MESSAGE.fullmatch(message)):
+        event.pop("message", None)
     for section in ("exception", "threads"):
         block = event.get(section)
         values = block.get("values") if isinstance(block, dict) else None
@@ -55,6 +77,7 @@ def init_sentry(component: str) -> ModuleType | None:
         return None
     try:
         sdk = import_module("sentry_sdk")
+        logging_module = import_module("sentry_sdk.integrations.logging")
     except ImportError:
         return None
     sdk.init(
@@ -65,6 +88,12 @@ def init_sentry(component: str) -> ModuleType | None:
         max_request_body_size="never",
         before_send=scrub_event,
         traces_sample_rate=0.0,
+        # No log record becomes an event, a breadcrumb or a Sentry log.
+        integrations=[
+            logging_module.LoggingIntegration(
+                level=None, event_level=None, sentry_logs_level=None
+            )
+        ],
     )
     sdk.set_tag("component", component)
     return sdk
