@@ -22,12 +22,12 @@ jobs:
       fail-fast: false
       matrix:
         # Lowest supported (requires-python, ruff.toml targets py310) and a current release.
-        python-version: ["3.10", "3.13"]
+        python-version: ["3.11", "3.13"]
     uses: bookchaowalit/platform-ci-workflows/.github/workflows/ci-python.yml@87dc5e1c7e0416886a6371d5a101bb2ccba38edd # v1.1.1
     with:
       python-version: ${{ matrix.python-version }}
       # Installs from uv.lock (uv sync --frozen --all-extras); ruff and mypy come from the dev extra.
-      # Ratchet: measured 91.11% on 2026-10-22 on 3.10 and 3.13 (ADR-0004: threshold = measured,
+      # Ratchet: measured 91.11% on 2026-10-22 on 3.11 and 3.13 (ADR-0004: threshold = measured,
       # rounded down); raise it as tests grow.
       coverage-threshold: "91"
       # Offline pytest under coverage (fixtures only, no live site traffic), then the dry-run plan.

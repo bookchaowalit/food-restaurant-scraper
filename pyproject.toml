@@ -2,7 +2,7 @@
 name = "food-restaurant-scraper"
 version = "0.1.0"
 description = "Bounded Wongnai restaurant collector (book-restaurant-scraping); offline fixtures only while restaurant.v1 is rejected."
-requires-python = ">=3.10"
+requires-python = ">=3.11.5"
 # Keep in sync with requirements.txt: setup_cron.sh installs the cron venv from that file.
 dependencies = [
     "httpx>=0.27.0",
